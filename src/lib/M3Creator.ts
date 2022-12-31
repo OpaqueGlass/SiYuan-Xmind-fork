@@ -1,6 +1,6 @@
 import { parseXMindMarkToXMindFile } from 'xmindmark'
 import save from 'save-file'
-import { listDocsByPath, getDocOutline, DocOutline } from './SiYuan'
+import { listDocsByPath, getDocOutline, DocOutline, getBlockKramdown } from './SiYuan'
 
 // m3字符串的格式大概就是这样的
 const xmindMarkFileContent = `
@@ -88,6 +88,29 @@ function ExtractOutline(outlines: DocOutline[] | undefined | null, index: number
     }
   })
   return result
+}
+
+export async function ListNodeParser(id:string) {
+  let result = "";
+  if (id == "") return "";
+  let request = await getBlockKramdown(id);
+  // 清理样式语法标记
+  result = request.kramdown.replaceAll(new RegExp(/{:.*}/, "gm"), "");
+  // 判断是否需要添加中心主题
+  let firstBullet = result.match(new RegExp(/^\* .*\n/, "gm"));
+  // 若只有一个根，用根作为中心主题
+  if (firstBullet && firstBullet.length == 1) {
+    result = result.replace(/\* /, "");
+  }else{
+    // 替代中心主题
+    result = "－" + "\n" + result;
+  }
+  // 清理空行
+  result = result.replaceAll(new RegExp(/^ *\n/, "gm"), "");
+  // 转换*标记
+  result = result.replaceAll(new RegExp(/[!\\]\*/, "gm"), "-");
+  console.log(result);
+  return result;
 }
 
 export const save_xmind = async (str: string) => {

@@ -85,6 +85,31 @@ export function lsNotebooks(): Promise<Map<"notebooks", NoteBookData[]>> {
   return Apply(Request(url))
 }
 
+export function getBlockKramdown(id: string): Promise<Record<"kramdown", string>> {
+  let url = "/api/block/getBlockKramdown";
+  let data = {
+    id,
+  };
+  return Apply(Request(url, data));
+}
+
+export function getBlockAttrs(id: string): Promise<Map<"data", any>> {
+  let url = "/api/attr/getBlockAttrs"
+  let data = {
+    id,
+  };
+  return Apply(Request(url, data));
+}
+
+export function setBlockAttrs(id: string, attributes: any): Promise<Record<"code", any>> {
+  let url = "/api/attr/setBlockAttrs";
+  let data = {
+    id: id,
+    attrs: attributes
+  };
+  return Apply(Request(url, data));
+}
+
 export interface DocOutline {
   children: DocOutline[] | null
   blocks: DocOutline[] | null // 
@@ -135,7 +160,7 @@ export function sqlRequest(sql: string): Promise<sqlResult[]> {
     stmt: sql,
   }
   let url = '/api/query/sql'
-  return Apply(Request(url, data))
+  return Apply(Request(url, data));
 }
 
 export async function getSiYuanBlock() {
@@ -151,10 +176,57 @@ export async function getSiYuanBlock() {
     id = "20220810120311-rcopcwn" // :)开发者测试用
   }
 
-  const res = await sqlRequest(`SELECT box,path,hpath FROM blocks WHERE id = '${id}' LIMIT 1`)
-  box = res[0].box
-  path = res[0].path
-  name = res[0].hpath.split("/").pop() || "中心主题"
+  const res = await sqlRequest(`SELECT box,path,hpath FROM blocks WHERE id = '${id}' LIMIT 1`);
+  if (res.length > 0) {
+    box = res[0].box
+    path = res[0].path
+    name = res[0].hpath.split("/").pop() || "中心主题";
+  }
 
   return { id, box, path, name }
+}
+
+
+export function getNearbyListBlock() {
+  let id:any = "";
+  try {
+    // @ts-ignore
+    let nextElement = window.frameElement.parentElement.parentElement.nextElementSibling;
+    console.log(nextElement);
+    if (nextElement && nextElement.getAttribute("data-type") == "NodeList" && nextElement.getAttribute("data-subtype") == "u") {
+      id = nextElement.getAttribute("data-node-id");
+    }
+  }catch(err) {
+    id = "20221231124153-580cj86";
+    console.error(err);
+  }
+  if (id == null || id == undefined) id = "";
+  return id;
+}
+
+export async function saveSettings(setting: any) {
+  let widgetId = "";
+  try {
+    // @ts-ignore 
+    widgetId = window.frameElement.parentElement.parentElement.dataset.nodeId;
+  }catch (err) {
+    widgetId = "20221231204657-ul0w0cu";
+  }
+  let result = await setBlockAttrs(widgetId, setting);
+  console.log(result);
+  // return result == 0;
+}
+
+export async function getSettings() {
+  let widgetId = "";
+  try {
+    // @ts-ignore 
+    widgetId = window.frameElement.parentElement.parentElement.dataset.nodeId;
+  }catch (err) {
+    widgetId = "20221231204657-ul0w0cu";
+  }
+  let result = await getBlockAttrs(widgetId);
+  console.log(result);
+  
+  return result;
 }
