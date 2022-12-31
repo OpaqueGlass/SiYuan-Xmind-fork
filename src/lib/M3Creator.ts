@@ -11,27 +11,39 @@ Central Topic
 
 const indent = "    "
 
-
-export async function ListFile(notebook: string, path: string, index = 0): Promise<string> {
+/**
+ * 
+ * @param notebook 
+ * @param path 
+ * @param mode this_doc_only 或 with_child_doc 或 with_child_doc_outline
+ * @param index 
+ * @returns 
+ */
+export async function ListFile(notebook: string, path: string, mode:string, index = 0): Promise<string> {
   let result = ""
   // 列出当前目录下的全部文件
-  const docs = await listDocsByPath(path, notebook)
-  await docs.files.reduce(
-    // @ts-ignore TODO: reduce 此处TS会报错
-    async (memo, file) => {
-      await memo
-      result += `${indent.repeat(index)}- ${file.name.replaceAll("&nbsp;", " ")}\n`
-      const outline : any = await getDocOutline(file.id)
-      if (outline.length > 0) {
-        result += ExtractOutline(outline, index + 1)
-      }
-
-      if (file.subFileCount > 0) {
-        result += await ListFile(notebook, file.path, index + 1)
-      }
-    }, undefined
-  );
-  if (docs.files.length == 0) {
+  const docs = await listDocsByPath(path, notebook);
+  if (mode !== "this_doc_only") {
+    await docs.files.reduce(
+      async (memo:any, file:any) => {
+        let tempFileName = file.name;
+        if (mode == "with_child_doc") tempFileName = tempFileName.substring(0, tempFileName.length - 3);
+        result += `${indent.repeat(index)}- ${tempFileName.replaceAll("&nbsp;", " ")}\n`;
+        if (mode == "with_child_doc_outline") {
+          const outline : any = await getDocOutline(file.id)
+          if (outline.length > 0) {
+            result += ExtractOutline(outline, index + 1)
+          }
+        }
+  
+        if (file.subFileCount > 0) {
+          result += await ListFile(notebook, file.path, mode, index + 1)
+        }
+      }, undefined
+    );
+  }
+  
+  if (result == "" && mode != "with_child_doc") {
     let dividedPath = path.split("/");
     let docid : any;
     if (dividedPath.length > 0) {

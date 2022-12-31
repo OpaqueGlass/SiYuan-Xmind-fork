@@ -6,17 +6,20 @@ import { Transformer } from "markmap-lib";
 import * as markmap from "markmap-view";
 
 
-const tip = ref("转换当前文件及其子文件的大纲为XMind");
+const tip = ref("转换并预览");
+let mode : string = "with_child_doc_outline";
 
 let markdown: string = ""
 let CurrentMarkmap: markmap.Markmap
 
 async function ExportToXmind() {
+  markdown = "";
   let { id, box, path, name } = await getSiYuanBlock()
   console.log(`id: ${id}, box: ${box}, path: ${path}`);
   tip.value = `正在导出...`;
-  markdown += `${name}\n`
-  markdown += await ListFile(box, path)
+  markdown += `${name}\n`;
+  console.log("用户选择模式", mode);
+  markdown += await ListFile(box, path, mode);
   tip.value = `完成！`;
   console.log(markdown);
   setTimeout(() => tip.value = "更新", 3000)
@@ -34,11 +37,14 @@ async function ExportToXmind() {
   // 1. load assets
   if (styles) loadCSS(styles);
   if (scripts) loadJS(scripts, { getMarkmap: () => markmap });
-
   // 2. create markmap
   // `options` is optional, i.e. `undefined` can be passed here
   if (CurrentMarkmap) {
-    CurrentMarkmap.renderData(root)
+    let tempElem = document.getElementById("markmap");
+    if (tempElem != null && tempElem != undefined) {
+      tempElem.innerHTML = "";
+    }
+    CurrentMarkmap = Markmap.create("#markmap", undefined, root);
   } else {
     CurrentMarkmap = Markmap.create("#markmap", undefined, root);
   }
@@ -72,14 +78,12 @@ async function SaveSvg() {
  */
 function SavePng() {
   let node:any = document.getElementById("markmap");
-  console.log(node);
   let name = "result";
   let width:any = document.getElementById("markmap")?.scrollWidth;
   let height:any = document.getElementById("markmap")?.scrollHeight;
   let type = "png";
   let serializer = new XMLSerializer()
-  let source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(node)
-  console.log(source);
+  let source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(node);
   let image = new Image()
   let canvas = document.createElement('canvas')
   canvas.width = width
@@ -115,7 +119,7 @@ function SavePng() {
       }"
       @click="SaveXmind"
       theme="primary"
-    >导出</t-button>
+    >导出为xmind</t-button>
     <t-button
       :style="{
         margin: 'auto',
@@ -124,6 +128,15 @@ function SavePng() {
       @click="SaveSvg"
       theme="primary"
     >另存为SVG</t-button>
+    <t-select :style="{
+        margin: 'auto',
+        display: 'block',
+        width: '300px'
+      }" v-model="mode">
+      <t-option key="this_doc_only" label="仅当前文档大纲" value="this_doc_only">仅当前文档大纲</t-option>
+      <t-option key="with_child_doc" label="当前文档及子文档" value="with_child_doc">当前文档及子文档</t-option>
+      <t-option key="with_child_doc_outline" label="当前文档、子文档及子文档大纲" value="with_child_doc_outline">当前文档、子文档及子文档大纲</t-option>
+    </t-select>
   </div>
   <svg id="markmap" style="width: 100vw; height: 90vh" />
 </template>
