@@ -197,7 +197,7 @@ export function getNearbyListBlock() {
       id = nextElement.getAttribute("data-node-id");
     }
   }catch(err) {
-    id = "20221231124153-580cj86";
+    id = "20221231221655-x9fpoik";
     console.error(err);
   }
   if (id == null || id == undefined) id = "";

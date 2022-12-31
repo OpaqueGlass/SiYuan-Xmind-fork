@@ -94,21 +94,25 @@ export async function ListNodeParser(id:string) {
   let result = "";
   if (id == "") return "";
   let request = await getBlockKramdown(id);
+  console.log("Original\n", request.kramdown);
   // 清理样式语法标记
   result = request.kramdown.replaceAll(new RegExp(/{:.*}/, "gm"), "");
   // 判断是否需要添加中心主题
   let firstBullet = result.match(new RegExp(/^\* .*\n/, "gm"));
-  // 若只有一个根，用根作为中心主题
+  // 若只有一个根，用根作为中心主题（移除根的无序列表标记* 并使所有行去除开头两个空格）
   if (firstBullet && firstBullet.length == 1) {
-    result = result.replace(/\* /, "");
+    result = result.replace("* ", "");
+    result = result.replaceAll(new RegExp(/^  /, "gm"), "");
   }else{
     // 替代中心主题
     result = "－" + "\n" + result;
   }
   // 清理空行
   result = result.replaceAll(new RegExp(/^ *\n/, "gm"), "");
-  // 转换*标记
-  result = result.replaceAll(new RegExp(/[!\\]\*/, "gm"), "-");
+  // 转换*标记（*前后必须为空格）
+  result = result.replaceAll(new RegExp(/(?<= )\*(?= )/, "gm"), "-");
+  // 转换行开头的*
+  result = result.replaceAll(new RegExp(/^\*/, "gm"), "-");
   console.log(result);
   return result;
 }
