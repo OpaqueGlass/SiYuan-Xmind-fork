@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { getSiYuanBlock, sqlRequest, } from "./lib/SiYuan";
-import { ListFile, save_xmind } from "./lib/M3Creator";
+import { getSiYuanBlock, sqlRequest} from "./lib/SiYuan";
+import { ListFile, save_xmind, outlineScope } from "./lib/M3Creator";
 import { Transformer } from "markmap-lib";
 import * as markmap from "markmap-view";
 
 
 const tip = ref("转换并预览");
-let mode : string = "with_child_doc_outline";
+let mode : any = ref("with_child_doc_outline");
+const outlineMin = ref(1);
+const outlineMax = ref(6);
 
 let markdown: string = ""
 let CurrentMarkmap: markmap.Markmap
@@ -16,10 +18,13 @@ async function ExportToXmind() {
   markdown = "";
   let { id, box, path, name } = await getSiYuanBlock()
   console.log(`id: ${id}, box: ${box}, path: ${path}`);
-  tip.value = `正在导出...`;
+  tip.value = `正在转换...`;
   markdown += `${name}\n`;
-  console.log("用户选择模式", mode);
-  markdown += await ListFile(box, path, mode);
+  console.log("用户选择模式", mode.value);
+  outlineScope[0] = outlineMin.value;
+  outlineScope[1] = outlineMax.value;
+  console.log("大纲范围选择", outlineScope);
+  markdown += await ListFile(box, path, mode.value);
   tip.value = `完成！`;
   console.log(markdown);
   setTimeout(() => tip.value = "更新", 3000)
@@ -103,40 +108,45 @@ function SavePng() {
 </script>
 
 <template>
-  <div style="display:flex;max-height:50px">
-    <t-button
-      :style="{
-        margin: 'auto',
-        display: 'block',
-      }"
-      @click="ExportToXmind"
-      theme="primary"
-    >{{ tip }}</t-button>
-    <t-button
-      :style="{
-        margin: 'auto',
-        display: 'block',
-      }"
-      @click="SaveXmind"
-      theme="primary"
-    >导出为xmind</t-button>
-    <t-button
-      :style="{
-        margin: 'auto',
-        display: 'block',
-      }"
-      @click="SaveSvg"
-      theme="primary"
-    >另存为SVG</t-button>
-    <t-select :style="{
-        margin: 'auto',
-        display: 'block',
-        width: '300px'
-      }" v-model="mode">
-      <t-option key="this_doc_only" label="仅当前文档大纲" value="this_doc_only">仅当前文档大纲</t-option>
-      <t-option key="with_child_doc" label="当前文档及子文档" value="with_child_doc">当前文档及子文档</t-option>
-      <t-option key="with_child_doc_outline" label="当前文档、子文档及子文档大纲" value="with_child_doc_outline">当前文档、子文档及子文档大纲</t-option>
-    </t-select>
+  <div style="max-height:80px">
+    <div style="display: flex; align: center; width: 580px;margin: auto;" >
+       <t-select :style="{
+          display: 'block',
+          width: '300px'
+        }" v-model="mode">
+          <t-option key="this_doc_only" label="仅当前文档大纲" value="this_doc_only">仅当前文档大纲</t-option>
+          <t-option key="with_child_doc" label="当前文档及子文档" value="with_child_doc">当前文档及子文档</t-option>
+          <t-option key="with_child_doc_outline" label="当前文档、子文档及子文档大纲" value="with_child_doc_outline">当前文档、子文档及子文档大纲</t-option>
+        </t-select>
+        <t-input-number style="width: 140px" v-model="outlineMin" :min="1" :max="6" label="大纲开始于" theme="column"></t-input-number>
+        <t-input-number style="width: 140px" v-model="outlineMax" :min="1" :max="6" label="大纲结束于" theme="column"></t-input-number>
+    </div>
+    <div style="display: flex; max-width:580px;align: center;  margin: auto; ">
+      <t-button
+          :style="{
+            margin: 'auto',
+            display: 'block',
+          }"
+          @click="ExportToXmind"
+          theme="primary"
+        >{{ tip }}</t-button>
+        <t-button
+          :style="{
+            margin: 'auto',
+            display: 'block',
+          }"
+          @click="SaveXmind"
+          theme="primary"
+        >另存为xmind</t-button>
+        <t-button
+          :style="{
+            margin: 'auto',
+            display: 'block',
+          }"
+          @click="SaveSvg"
+          theme="primary"
+        >另存为SVG</t-button>
+    </div>
   </div>
   <svg id="markmap" style="width: 100vw; height: 90vh" />
 </template>

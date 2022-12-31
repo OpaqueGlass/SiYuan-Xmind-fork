@@ -89,7 +89,7 @@ export interface DocOutline {
   children: DocOutline[] | null
   blocks: DocOutline[] | null // 
   type: string,
-  subtype: string,
+  subType: string, // 具体是哪一类标题
   name: string | never,
   count: number // 这一级有多少标题
   alias: string
@@ -148,7 +148,7 @@ export async function getSiYuanBlock() {
     // @ts-ignore 如果不在iframe中这句话会报错
     id = window.frameElement.parentElement.parentElement.dataset.nodeId
   } catch (e) {
-    id = "20220828125425-5dh8xpf" // :)开发者测试用
+    id = "20220810120311-rcopcwn" // :)开发者测试用
   }
 
   const res = await sqlRequest(`SELECT box,path,hpath FROM blocks WHERE id = '${id}' LIMIT 1`)
