@@ -78,11 +78,12 @@ function ExtractOutline(outlines: DocOutline[] | undefined | null, index: number
     if (outlineHeadingNum >= limit[0]) {
       result += `${indent.repeat(index)}- ${content}\n`;
     }
+    // 下一层级大纲
     if (outlineHeadingNum + 1 <= limit[1]) {
       if (outline.type == "outline") {
-        result += ExtractOutline(outline.blocks, outlineHeadingNum > limit[0]? index + 1 : index)
+        result += ExtractOutline(outline.blocks, outlineHeadingNum >= limit[0]? index + 1 : index)
       }else if (outline.type == "NodeHeading") {
-        result += ExtractOutline(outline.children, outlineHeadingNum > limit[0]? index + 1 : index);
+        result += ExtractOutline(outline.children, outlineHeadingNum >= limit[0]? index + 1 : index);
       }
     }
   })
