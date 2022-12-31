@@ -47,6 +47,55 @@ async function ExportToXmind() {
 async function SaveXmind() {
   save_xmind(markdown)
 }
+// REFER:https://stackoverflow.com/questions/60921718/save-generated-svg-with-svg-js-as-svg-file
+async function SaveSvg() {
+  let text:any = document.getElementById("markmap")?.innerHTML;
+  text = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" id="markmap" style="width: 100vw; height: 90vh;" class="mm-ip319j-1" version="1.1">${text}</svg>`
+  let fileName = "result.svg";
+  let fileType = "image/svg";
+  console.log(text);
+  var blob = new Blob([text], { type: fileType });
+
+  var a = document.createElement('a');
+  a.download = fileName;
+  a.href = URL.createObjectURL(blob);
+  a.dataset.downloadurl = [fileType, a.download, a.href].join(':');
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 1500);
+}
+
+/**
+ * 可视区域保存为png（全部显示时图片模糊）
+ */
+function SavePng() {
+  let node:any = document.getElementById("markmap");
+  console.log(node);
+  let name = "result";
+  let width:any = document.getElementById("markmap")?.scrollWidth;
+  let height:any = document.getElementById("markmap")?.scrollHeight;
+  let type = "png";
+  let serializer = new XMLSerializer()
+  let source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(node)
+  console.log(source);
+  let image = new Image()
+  let canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  let context:any = canvas.getContext('2d')
+  // context.fillStyle = '#fff'
+  // context.fillRect(0, 0, 10000, 10000)
+  image.onload = function () {
+    context.drawImage(image, 0, 0)
+    let a = document.createElement('a')
+    a.download = `${name}.${type}`
+    a.href = canvas.toDataURL(`image/${type}`)
+    a.click()
+  }
+  image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source)
+}
 </script>
 
 <template>
@@ -67,6 +116,14 @@ async function SaveXmind() {
       @click="SaveXmind"
       theme="primary"
     >导出</t-button>
+    <t-button
+      :style="{
+        margin: 'auto',
+        display: 'block',
+      }"
+      @click="SaveSvg"
+      theme="primary"
+    >另存为SVG</t-button>
   </div>
   <svg id="markmap" style="width: 100vw; height: 90vh" />
 </template>

@@ -21,16 +21,28 @@ export async function ListFile(notebook: string, path: string, index = 0): Promi
     async (memo, file) => {
       await memo
       result += `${indent.repeat(index)}- ${file.name.replaceAll("&nbsp;", " ")}\n`
-      const outline = await getDocOutline(file.id)
+      const outline : any = await getDocOutline(file.id)
       if (outline.length > 0) {
-        result += ExtractOutline(outline[0].blocks, index + 1)
+        result += ExtractOutline(outline, index + 1)
       }
 
       if (file.subFileCount > 0) {
         result += await ListFile(notebook, file.path, index + 1)
       }
     }, undefined
-  )
+  );
+  if (docs.files.length == 0) {
+    let dividedPath = path.split("/");
+    let docid : any;
+    if (dividedPath.length > 0) {
+      docid = dividedPath[dividedPath.length - 1];
+      docid = docid.substring(0, docid.length - 3);
+    }
+    const outline : any = await getDocOutline(docid);
+    if (outline.length > 0) {
+      result += ExtractOutline(outline, index);
+    }
+  }
   return result
 }
 
@@ -39,13 +51,21 @@ function ExtractOutline(outlines: DocOutline[] | undefined | null, index: number
     return ""
   }
   let result = ""
-  outlines.map((outline => {
+  outlines.map((outline:any) => {
     // 替换标题中的空格
-    let content = outline.content.replaceAll("&nbsp;", " ")
+    let content = outline.content;
+    if (content != null || content != undefined) {
+      content = content.replaceAll("&nbsp;", " ");
+    }else{
+      content = outline.name.replaceAll("&nbsp;", " ");
+    }
     result += `${indent.repeat(index)}- ${content}\n`
-    // 然后加进来，如果这个标题下面有小标题，那么递归调用也把它加进来
-    result += ExtractOutline(outline.children, index + 1)
-  }))
+    if (outline.type == "outline") {
+      result += ExtractOutline(outline.blocks, index + 1)
+    }else if (outline.type == "NodeHeading") {
+      result += ExtractOutline(outline.children, index + 1);
+    }
+  })
   return result
 }
 
