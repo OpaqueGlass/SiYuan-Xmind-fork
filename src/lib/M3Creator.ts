@@ -96,7 +96,7 @@ export async function ListNodeParser(id:string) {
   let request = await getBlockKramdown(id);
   console.log("Original\n", request.kramdown);
   // 清理样式语法标记
-  result = request.kramdown.replaceAll(new RegExp(/{:.*}/, "gm"), "");
+  result = request.kramdown.replaceAll(new RegExp(/{:[^}]*}/, "gm"), "");
   // 判断是否需要添加中心主题
   let firstBullet = result.match(new RegExp(/^\* .*\n/, "gm"));
   // 若只有一个根，用根作为中心主题（移除根的无序列表标记* 并使所有行去除开头两个空格）

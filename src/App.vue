@@ -178,7 +178,7 @@ function SavePng() {
 
 <template>
   <div style="max-height:80px">
-    <svg id="markmap" style="width: 90vw; height: 85vh" />
+    
     <div style="display: flex; max-width:580px;align: center;  margin: auto; ">
       <t-button
           :style="{
@@ -197,14 +197,14 @@ function SavePng() {
           @click="SaveXmind"
           theme="primary"
         >另存为xmind</t-button>
-        <!-- <t-button
+        <t-button
           :style="{
             margin: 'auto',
             display: 'block',
           }"
-          @click="SaveSvg"
+          @click="SavePng"
           theme="primary"
-        >另存为SVG</t-button> -->
+        >另存为PNG</t-button>
     </div>
     <div style="display: flex; align: center; width: 580px;margin: auto;" >
        <t-select :style="{
@@ -219,6 +219,7 @@ function SavePng() {
         <t-input-number style="width: 140px" v-model="outlineMin" :min="1" :max="6" label="大纲开始于" theme="column"></t-input-number>
         <t-input-number style="width: 140px" v-model="outlineMax" :min="1" :max="6" label="大纲结束于" theme="column"></t-input-number>
     </div>
+    <svg id="markmap" style="width: 90vw; height: 85vh" />
   </div>
   
 </template>
