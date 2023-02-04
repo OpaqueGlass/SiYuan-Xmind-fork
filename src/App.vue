@@ -3,7 +3,7 @@ import { ref, Ref } from "vue";
 import { getSiYuanBlock, sqlRequest, getNearbyListBlock, getSettings, saveSettings} from "./lib/SiYuan";
 import { ListFile, save_xmind, outlineScope, ListNodeParser } from "./lib/M3Creator";
 import { Transformer } from "markmap-lib";
-import * as markmap from "markmap-view";
+import { Markmap, loadCSS, loadJS } from "markmap-view";
 
 
 const tip = ref("转换并预览");
@@ -13,7 +13,7 @@ const outlineMax = ref(6);
 const refreshing: Ref<any> = ref(undefined);
 
 let markdown: string = ""
-let CurrentMarkmap: markmap.Markmap
+let CurrentMarkmap: Markmap
 let g_settings: any;
 // 深色模式
 let g_darkMode: boolean = false;
@@ -86,11 +86,11 @@ async function ExportToXmind(byClick:boolean = false) {
   // 2. get assets
   // either get assets required by used features
   const { styles, scripts } = transformer.getUsedAssets(features);
-  const { Markmap, loadCSS, loadJS } = markmap;
+  
 
   // 1. load assets
   if (styles) loadCSS(styles);
-  if (scripts) loadJS(scripts, { getMarkmap: () => markmap });
+  if (scripts) loadJS(scripts, { getMarkmap: () => Markmap });
   // 2. create markmap
   // `options` is optional, i.e. `undefined` can be passed here
   console.log(document.getElementById("markmap"));
